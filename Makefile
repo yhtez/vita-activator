@@ -2,13 +2,14 @@ rwildcard=$(foreach d,$(wildcard $1*),$(call rwildcard,$d/,$2) $(filter $(subst 
 
 TITLE_ID = ACTI00000
 TARGET = vita-activator
+NAME = Vita Activator
 
 SRC_C :=$(call rwildcard, src/, *.c)
 
 OBJ_DIRS := $(addprefix out/, $(dir $(SRC_C:src/%.c=%.o)))
 OBJS := $(addprefix out/, $(SRC_C:src/%.c=%.o))
 
-LIBS := -lSceKernel_stub -lSceVshBridge_stub -lSceSysmodule_stub -lSceNet_stub -lSceNetCtl_stub -lSceHttp_stub -lSceSsl_stub -lSceDisplay_stub -lSceReg_stub
+LIBS := -lSceKernel_stub -lSceCtrl_stub -lSceVshBridge_stub -lSceSysmodule_stub -lSceNet_stub -lSceNetCtl_stub -lSceHttp_stub -lSceSsl_stub -lSceDisplay_stub -lSceReg_stub
 
 CC := arm-vita-eabi-gcc
 STRIP := arm-vita-eabi-strip
@@ -30,7 +31,7 @@ release/eboot.bin: vpk/eboot.bin
 	cp vpk/eboot.bin release
 
 vpk/sce_sys/param.sfo:
-	vita-mksfoex -s TITLE_ID=$(TITLE_ID) "$(TARGET)" $@
+	vita-mksfoex -s TITLE_ID=$(TITLE_ID) "$(NAME)" $@
 	
 vpk/eboot.bin: out/$(TARGET).velf
 	vita-make-fself $< $@
