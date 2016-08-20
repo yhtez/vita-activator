@@ -115,15 +115,15 @@ int main(int argc, char** argv) {
         printf("Please check these details are correct\n");
         printf("EMAIL:    ");
         setfg(COLOR_YELLOW);
-        printf("%s", email);
+        printf("%s\n", email);
         setfg(COLOR_WHITE);
         printf("PASSWORD: ");
         setfg(COLOR_YELLOW);
-        printf("%s", password);
+        printf("%s\n", password);
         setfg(COLOR_WHITE);
         printf("IDPS:     ");
         setfg(COLOR_YELLOW);
-        printf("%s", idps);
+        printf("%s\n", idps);
         setfg(COLOR_WHITE);
     }
 
