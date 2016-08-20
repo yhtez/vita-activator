@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #include <psp2/display.h>
 #include <psp2/net/http.h>
