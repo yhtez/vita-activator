@@ -19,14 +19,14 @@ ASFLAGS += $(CFLAGS)
 all: vpk eboot
 	
 vpk: release/$(TARGET).vpk
-	mkdir release
 eboot: release/eboot.bin
-	mkdir release
 	
-%.vpk: vpk/eboot.bin vpk/sce_sys/param.sfo
+release/%.vpk: vpk/eboot.bin vpk/sce_sys/param.sfo
+	test -d release || mkdir release
 	cd vpk; zip -r -q ../$@ ./*; cd ..
 
 release/eboot.bin: vpk/eboot.bin
+	test -d release || mkdir release
 	cp vpk/eboot.bin release
 
 vpk/sce_sys/param.sfo:
