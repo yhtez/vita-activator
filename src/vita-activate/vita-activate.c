@@ -1,5 +1,4 @@
 #include "vita-activate.h"
-#include "../debugscreen/graphics.h"
 
 #include <ctype.h>
 #include <stdio.h>
@@ -13,8 +12,6 @@
 #include <psp2/net/netctl.h>
 #include <psp2/net/http.h>
 #include <psp2/libssl.h>
-
-#define printf psvDebugScreenPrintf
 
 void netInit() {
     sceSysmoduleLoadModule(SCE_SYSMODULE_NET);
@@ -72,9 +69,6 @@ int urlencode(char *dest, const char *src) {
 int vita_activate(const char* email, const char* password, const char* idps, const char* file) {
     int tmpl, conn, req, ret;
     char email_encoded[8 * 16];
-    struct SceHttpsData certs[1][2] = {{{SONY_ACT_CA, strlen(SONY_ACT_CA)}, {SONY_ACT_CERT, strlen(SONY_ACT_CERT)}}};
-    
-    psvDebugScreenInit();
     
     netInit();
     httpInit();
@@ -90,10 +84,6 @@ int vita_activate(const char* email, const char* password, const char* idps, con
     ret     = sceHttpAddRequestHeader(req, "X-I-5-DRM-Version", "1.0", SCE_HTTP_HEADER_OVERWRITE);
     ret     = sceHttpAddRequestHeader(req, "Content-Type", "application/x-www-form-urlencoded", SCE_HTTP_HEADER_OVERWRITE);
     ret     = sceHttpSendRequest(req, data, sizeof(data));
-    int ssl_error;
-    int detail;
-    sceHttpsGetSslError(req, &ssl_error, &detail);
-    printf("0x%08X 0x%08X\n", ssl_error, detail);
     
     SceUID file_io = sceIoOpen(file, SCE_O_WRONLY | SCE_O_CREAT, 0777);
 
@@ -107,8 +97,6 @@ int vita_activate(const char* email, const char* password, const char* idps, con
     }
     
     sceIoClose(file_io);
-
-    sceHttpsEnableOption(SCE_HTTPS_ERROR_SSL_INVALID_CERT | SCE_HTTPS_ERROR_SSL_UNKNOWN_CA);
     
     httpTerm();
     netTerm();
