@@ -1,5 +1,5 @@
 #include "vita-activate.h"
-//#include "certs.h" TODO
+#include "../debugscreen/graphics.h"
 
 #include <ctype.h>
 #include <stdio.h>
@@ -14,11 +14,13 @@
 #include <psp2/net/http.h>
 #include <psp2/libssl.h>
 
+#define printf psvDebugScreenPrintf
+
 void netInit() {
     sceSysmoduleLoadModule(SCE_SYSMODULE_NET);
     
     SceNetInitParam param;
-    int size = 1024 * 1024;
+    int size = 1 * 1024 * 1024;
     
     param.memory = malloc(size);
     param.size = size;
@@ -40,8 +42,8 @@ void httpInit() {
     sceSysmoduleLoadModule(SCE_SYSMODULE_HTTPS);
     sceSysmoduleLoadModule(SCE_SYSMODULE_SSL);
     
-    sceHttpInit(1024 * 1024);
-    sceSslInit(1024 * 1024);
+    sceHttpInit(1 * 1024 * 1024);
+    sceSslInit(1 * 1024 * 1024);
 }
 
 void httpTerm() {
@@ -68,28 +70,31 @@ int urlencode(char *dest, const char *src) {
 }
 
 int vita_activate(const char* email, const char* password, const char* idps, const char* file) {
-    netInit();
-    httpInit();
-    
     int tmpl, conn, req, ret;
     char email_encoded[8 * 16];
+    struct SceHttpsData certs[1][2] = {{{SONY_ACT_CA, strlen(SONY_ACT_CA)}, {SONY_ACT_CERT, strlen(SONY_ACT_CERT)}}};
     
-    sceHttpsDisableOption(SCE_HTTPS_ERROR_SSL_INVALID_CERT | SCE_HTTPS_ERROR_SSL_UNKNOWN_CA);
+    psvDebugScreenInit();
+    
+    netInit();
+    httpInit();
     
     urlencode(email_encoded, email);
     
     char data[53+strlen(email_encoded) + strlen(password) + strlen(idps)];
     snprintf(data, 54+strlen(email_encoded) + strlen(password) + strlen(idps), "loginid=%s&password=%s&consoleid=%s&platform=psp2&acttype=4", email_encoded, password, idps);
 
-    //sceHttpsLoadCert(2, certs, NULL, NULL); TODO
-    
-    tmpl    = sceHttpCreateTemplate("Glory to arstotzka", 1, 1);
-    conn    = sceHttpCreateConnectionWithURL(tmpl, "https://commerce.np.ac.playstation.net/cap.m", 1);
+    tmpl    = sceHttpCreateTemplate("Glory to arstotzka", 2, 1);
+    conn    = sceHttpCreateConnectionWithURL(tmpl, "https://commerce.np.ac.playstation.net/cap.m", 0);
     req     = sceHttpCreateRequestWithURL(conn, SCE_HTTP_METHOD_POST, "https://commerce.np.ac.playstation.net/cap.m", sizeof(data));
     ret     = sceHttpAddRequestHeader(req, "X-I-5-DRM-Version", "1.0", SCE_HTTP_HEADER_OVERWRITE);
     ret     = sceHttpAddRequestHeader(req, "Content-Type", "application/x-www-form-urlencoded", SCE_HTTP_HEADER_OVERWRITE);
     ret     = sceHttpSendRequest(req, data, sizeof(data));
-
+    int ssl_error;
+    int detail;
+    sceHttpsGetSslError(req, &ssl_error, &detail);
+    printf("0x%08X 0x%08X\n", ssl_error, detail);
+    
     SceUID file_io = sceIoOpen(file, SCE_O_WRONLY | SCE_O_CREAT, 0777);
 
     unsigned char buffer[128 * 128];
