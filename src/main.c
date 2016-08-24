@@ -1,16 +1,16 @@
-#include "debugscreen/graphics.h"
 #include "vita-activate/vita-activate.h"
 
 #include <stdio.h>
 #include <string.h>
 
+#include <psp2/types.h>
+#include <psp2/apputil.h>
 #include <psp2/ctrl.h>
-
-#include <psp2/io/fcntl.h>
+#include <psp2/display.h>
 #include <psp2/kernel/processmgr.h>
+#include <psp2/ime_dialog.h>
 
-#define printf psvDebugScreenPrintf
-#define setfg psvDebugScreenSetFgColor
+#include <vita2d.h>
 
 int _vshSblAimgrGetConsoleId(char CID[32]);
 int sceRegMgrGetKeyStr(const char* reg, const char* key, char* str, const int buffer_size);
@@ -51,83 +51,9 @@ int main(int argc, char** argv) {
     char password[2 * 16];
     char CID[2 * 16];
     char idps[(2 * 16) + 1];
-    int i;
-    psvDebugScreenInit();
     
-    printf("Reading account info and device IDPS\n\n");
-    
-    sceRegMgrGetKeyStr("/CONFIG/NP", "login_id", &email, 6 * 16);
-    sceRegMgrGetKeyStr("/CONFIG/NP", "password", &password, 2 * 16);
-
-    _vshSblAimgrGetConsoleId(CID);
-    for (i = 0; i < 16; i++) {
-        snprintf(idps + (i * 2), (2 * 16) - (i * 2) + 1, "%02X", CID[i]);
-    }
-    
-    printf("Downloading activation data using registered PSN account\n\n");
-    
-    if (vita_activate(email, password, idps, "ux0:temp/act.dat") > 0) {
-        setfg(COLOR_GREEN);
-        printf("Activation data downloaded successfully\n\n");
-        setfg(COLOR_WHITE);
-        printf("To replace system act.dat press ");
-        setfg(COLOR_YELLOW);
-        printf("CROSS\n");
-        setfg(COLOR_WHITE);
-        printf("or\n");
-        printf("To keep current system act.dat press ");
-        setfg(COLOR_YELLOW);
-        printf("CIRCLE\n\n");
-        setfg(COLOR_WHITE);
-        
-        int key = get_key();
-        while (key != SCE_CTRL_CROSS && key != SCE_CTRL_CIRCLE) {
-            key = get_key();
-        }
-        
-        if (key == SCE_CTRL_CROSS) {
-            setfg(COLOR_CYAN);
-            printf("Replacing system act.dat\n\n");
-            setfg(COLOR_WHITE);
-            SceUID temp_act = sceIoOpen("ux0:temp/act.dat", SCE_O_RDONLY, 0777);
-            SceUID sys_act  = sceIoOpen("tm0:npdrm/act.dat", SCE_O_WRONLY | SCE_O_CREAT, 0777);
-            
-            unsigned char buffer[128 * 128];
-            int read = 0;
-            
-            while ((read = sceIoRead(temp_act, buffer, sizeof(buffer))) > 0) {
-                sceIoWrite(sys_act, buffer, read);
-            }
-            
-            sceIoClose(temp_act);
-            sceIoClose(sys_act);
-        } else {
-            setfg(COLOR_CYAN);
-            printf("System act.dat left untouched\n");
-            printf("Downloaded act.dat is in ux0:temp\n\n");
-            setfg(COLOR_WHITE);
-        }
-        
-    } else {
-        setfg(COLOR_RED);
-        printf("Activation data failed to download\n\n");
-        setfg(COLOR_WHITE);
-        printf("Please check these details are correct\n");
-        printf("EMAIL:    ");
-        setfg(COLOR_YELLOW);
-        printf("%s\n", email);
-        setfg(COLOR_WHITE);
-        printf("PASSWORD: ");
-        setfg(COLOR_YELLOW);
-        printf("%s\n", password);
-        setfg(COLOR_WHITE);
-        printf("IDPS:     ");
-        setfg(COLOR_YELLOW);
-        printf("%s\n", idps);
-        setfg(COLOR_WHITE);
-    }
-
-    printf("Press any key to exit\n");
+    //TODO: Make homebrew do something
+    sceAppUtilInit(&(SceAppUtilInitParam){}, &(SceAppUtilBootParam){});
     
     get_key();
     sceKernelExitProcess(0);

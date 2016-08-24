@@ -9,26 +9,33 @@ SRC_C :=$(call rwildcard, src/, *.c)
 OBJ_DIRS := $(addprefix out/, $(dir $(SRC_C:src/%.c=%.o)))
 OBJS := $(addprefix out/, $(SRC_C:src/%.c=%.o))
 
-LIBS := -lSceKernel_stub -lSceCtrl_stub -lSceVshBridge_stub -lSceSysmodule_stub -lSceNet_stub -lSceNetCtl_stub -lSceHttp_stub -lSceSsl_stub -lSceDisplay_stub -lSceReg_stub
+LIBS := -lSceKernel_stub -lSceAppUtil_stub -lSceCommonDialog_stub -lSceIme_stub -lSceCtrl_stub -lSceVshBridge_stub -lSceSysmodule_stub -lSceNet_stub -lSceNetCtl_stub -lSceHttp_stub -lSceSsl_stub -lSceDisplay_stub -lSceReg_stub
 
 CC := arm-vita-eabi-gcc
 STRIP := arm-vita-eabi-strip
 
-CFLAGS += -Wl,-q -Wall -O3
+CONF ?= RELEASE
+
+CFLAGS += -Wl,-q -Wall -O3 -D $(CONF)
 ASFLAGS += $(CFLAGS)
 
-all: vpk eboot
-	
-vpk: release/$(TARGET).vpk
-eboot: release/eboot.bin
-	
-release/%.vpk: vpk/eboot.bin vpk/sce_sys/param.sfo
-	test -d release || mkdir release
+.PHONY: all vpk eboot velf clean
+all: vpk eboot velf
+vpk: build/$(TARGET).vpk
+eboot: build/eboot.bin
+velf: build/$(TARGET).velf
+
+build/%.vpk: vpk/eboot.bin vpk/sce_sys/param.sfo
+	mkdir -p build
 	cd vpk; zip -r -q ../$@ ./*; cd ..
 
-release/eboot.bin: vpk/eboot.bin
-	test -d release || mkdir release
-	cp vpk/eboot.bin release
+build/eboot.bin: vpk/eboot.bin
+	mkdir -p build
+	cp vpk/eboot.bin build
+	
+build/%.velf: out/%.velf
+	mkdir -p build
+	cp out/$(@:build/%=%) build
 
 vpk/sce_sys/param.sfo:
 	vita-mksfoex -s TITLE_ID=$(TITLE_ID) "$(NAME)" $@
@@ -46,7 +53,7 @@ $(OBJ_DIRS):
 	mkdir -p $@
 
 out/%.o : src/%.c | $(OBJ_DIRS)
-	$(CC) -c -o $@ $<
+	$(CC) -c -o $@ $(CFLAGS) $<
 
 clean:
 	@rm -rf out/*.velf out/*.elf $(OBJS) release/* vpk/eboot.bin vpk/sce_sys/param.sfo

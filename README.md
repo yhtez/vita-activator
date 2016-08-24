@@ -1,20 +1,31 @@
-# vita-activator
-Use this to get activation data on a 3.60 vita
+# Vita Activator
+Use this to get activation data on a HENkaku enabled PlayStation Vita
 
-# Installation
+# Requirements
+
+
+# Compiling
 Either download latest vita-activator.vpk under releases  
 or  
 Clone repo to your pc  
-`git clone http://github.com/ZombieWizzard/vita-activator.git`  
-and build from sources  
 ```
+git clone http://github.com/ZombieWizzard/vita-activator.git
 cd vita-activator
-make clean all
-```  
-vita-activator.vpk will be in release folder
+```
+and build from sources
+```
+make clean
+make (all|vpk|eboot|velf) CONF=RELEASE
+```
+or to disable SSL certification (useful for debugging with a proxy)
+```
+make clean
+make (all|vpk|eboot|velf) CONF=DEBUG
+```
+vita-activator.vpk and eboot.bin will be in build folder
 
 # Usage
 Once installed run Vita Activator and then follow on screen instructions
 
-# Source
-Feel free to use vita-activate.c and vita-activate.h in your own projects if you want, it should be simple enough to figure out how to use vita_activate
+# License
+You are free to use this code for any purposes
