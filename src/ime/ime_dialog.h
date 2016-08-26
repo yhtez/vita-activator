@@ -12,7 +12,7 @@
 extern "C" {
 #endif
 
-int initImeDialog(char *title, char *initial_text, int max_text_length);
+int initImeDialog(char *title, char *initial_text, int max_text_length, int password);
 uint16_t *getImeDialogInputTextUTF16();
 uint8_t *getImeDialogInputTextUTF8();
 int isImeDialogRunning();

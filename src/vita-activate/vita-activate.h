@@ -5,26 +5,31 @@
 extern "C" {
 #endif
     
+enum activateResponses {
+    ACTIVATE_SUCCESS        = 1,
+    ACTIVATE_INVALID_PSN    = -1,
+    ACTIVATE_INVALID_IDPS   = -2,
+    ACTIVATE_UNKNOWN_ERROR  = -3
+};
+    
 /**
  * Writes activation data to provided file path
- * @param[in] email
- * @param[in] password
- * @param[in] idps
- * @param[in] file
- * @return 1 if activatio
+ * @param[in] email - PSN Account Email
+ * @param[in] password - PSN Account Password
+ * @param[in] idps - IDPS of device to activate
+ * @param[in] file - Directory to write activation data to
+ * @return Returns HTTP Status code
  */
 int vita_activate(const char* email, const char* password, const char* idps, const char* file);
 
 /**
- * Get the controller state information (polling, positive logic).
- *
- * @param[in] port - use 0.
- * @param[out] *pad_data - see ::SceCtrlData.
- * @param[in] count - Buffers count.
- *
- * @return Buffers count, between 1 and 'count'. <0 on error.
+ * Writes activation data to provided file path
+ * @param[in] email - PSN Account Email
+ * @param[in] password - PSN Account Password
+ * @param[in] idps - IDPS of device to activate
+ * @return Returns HTTP Status code
  */
-int vita_deactivate(const char* email, const char* password, const char* idps, const char* file);
+int vita_deactivate(const char* email, const char* password, const char* idps);
 
 #ifdef __cplusplus
 }

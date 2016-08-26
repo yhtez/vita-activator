@@ -9,7 +9,9 @@ SRC_C :=$(call rwildcard, src/, *.c)
 OBJ_DIRS := $(addprefix out/, $(dir $(SRC_C:src/%.c=%.o)))
 OBJS := $(addprefix out/, $(SRC_C:src/%.c=%.o))
 
-LIBS := -lSceKernel_stub -lSceAppUtil_stub -lSceCommonDialog_stub -lSceIme_stub -lSceCtrl_stub -lSceVshBridge_stub -lSceSysmodule_stub -lSceNet_stub -lSceNetCtl_stub -lSceHttp_stub -lSceSsl_stub -lSceDisplay_stub -lSceReg_stub
+LIBS := -lSceKernel_stub -lSceAppUtil_stub -lSceCommonDialog_stub -lSceIme_stub -lSceCtrl_stub \
+	-lSceVshBridge_stub -lSceSysmodule_stub -lSceNet_stub -lSceNetCtl_stub -lSceHttp_stub  \
+	-lSceSsl_stub -lSceDisplay_stub -lSceGxm_stub -lScePgf_stub -lvita2d -lSceReg_stub
 
 CC := arm-vita-eabi-gcc
 STRIP := arm-vita-eabi-strip
@@ -19,11 +21,11 @@ CONF ?= RELEASE
 CFLAGS += -Wl,-q -Wall -O3 -D $(CONF)
 ASFLAGS += $(CFLAGS)
 
-.PHONY: all vpk eboot velf clean
-all: vpk eboot velf
+.PHONY: all vpk eboot elf clean
+all: vpk eboot elf
 vpk: build/$(TARGET).vpk
 eboot: build/eboot.bin
-velf: build/$(TARGET).velf
+elf: build/$(TARGET).elf
 
 build/%.vpk: vpk/eboot.bin vpk/sce_sys/param.sfo
 	mkdir -p build

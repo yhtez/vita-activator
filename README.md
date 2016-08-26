@@ -1,8 +1,8 @@
 # Vita Activator
-Use this to get activation data on a HENkaku enabled PlayStation Vita
+Use this to get activation data on a HENkaku enabled PlayStation Vita  
 
 # Requirements
-
+[libvita2d](https://github.com/xerpi/libvita2d "By xerpi")
 
 # Compiling
 Either download latest vita-activator.vpk under releases  
@@ -12,20 +12,15 @@ Clone repo to your pc
 git clone http://github.com/ZombieWizzard/vita-activator.git
 cd vita-activator
 ```
-and build from sources
+and build from sources  
 ```
 make clean
-make (all|vpk|eboot|velf) CONF=RELEASE
+make (all|vpk|eboot|elf) CONF=(RELEASE|DEBUG)
 ```
-or to disable SSL certification (useful for debugging with a proxy)
-```
-make clean
-make (all|vpk|eboot|velf) CONF=DEBUG
-```
-vita-activator.vpk and eboot.bin will be in build folder
+vita-activator.vpk, eboot.bin and vita-activator.elf will be in build folder  
 
 # Usage
-Once installed run Vita Activator and then follow on screen instructions
+Once installed run Vita Activator and then follow on screen instructions  
 
 # License
-You are free to use this code for any purposes
+You are free to use this code for any purposes  

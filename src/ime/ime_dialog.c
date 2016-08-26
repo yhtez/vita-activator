@@ -1,5 +1,7 @@
 #include "ime_dialog.h"
 
+#include <string.h>
+
 #include <psp2/types.h>
 #include <psp2/ime_dialog.h>
 
@@ -52,7 +54,7 @@ void utf8_to_utf16(uint8_t *src, uint16_t *dst) {
     *dst = '\0';
 }
 
-int initImeDialog(char *title, char *initial_text, int max_text_length) {
+int initImeDialog(char *title, char *initial_text, int max_text_length, int password) {
     if (ime_dialog_running)
         return -1;
 
@@ -69,6 +71,7 @@ int initImeDialog(char *title, char *initial_text, int max_text_length) {
     param.maxTextLength = max_text_length;
     param.initialText = ime_initial_text_utf16;
     param.inputTextBuffer = ime_input_text_utf16;
+    param.textBoxMode = password;
 
     int res = sceImeDialogInit(&param);
     if (res >= 0)
