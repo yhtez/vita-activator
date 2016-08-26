@@ -236,7 +236,7 @@ int main(int argc, char** argv) {
                     if (buttons & SCE_CTRL_CROSS)
                         loop = 0;
                 } else if (act_mode == 2) {
-                    vita2d_printf(pgf, 6.0f, GREEN, "System has been de-activated succesfully");
+                    vita2d_printf(pgf, 6.0f, GREEN, "System has been deactivated succesfully");
                     width = vita2d_printf(pgf, 7.0f, WHITE, "To exit Vita Activator press ");
                     vita2d_xprintf(pgf, width, 7.0f, CYAN, "CROSS");
                     if (buttons & SCE_CTRL_CROSS)
