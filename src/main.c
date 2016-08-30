@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
     char idps[2 * 16] = {0};
     char *title = "Welcome to Vita Activator";
     int width, buttons;
-    int stage = 0;
+    int stage = STAGE_MAIN;
     int act_mode = 0;
     int ime = 0;
     int loop = 1;
@@ -101,7 +101,7 @@ int main(int argc, char** argv) {
         vita2d_printf(pgf, 4.0f, WHITE, title);
         
         switch (stage) {            
-            case 0:
+            case STAGE_MAIN:
                 width = vita2d_printf(pgf, 6.0f, GREEN, "To activate PlayStation Vita press ");
                 vita2d_xprintf(pgf, width, 6.0f, WHITE, "CROSS");
                 width = vita2d_printf(pgf, 7.0f, RED, "To deactivate PlayStation Vita press ");
@@ -110,40 +110,44 @@ int main(int argc, char** argv) {
 //                vita2d_xprintf(pgf, width, 8.0f, WHITE, "SQUARE ");
                 
                 if (buttons & SCE_CTRL_CROSS) {
-                    stage = 1; //Get PSN Info
+                    stage = STAGE_ACC; //Get PSN Info
                     act_mode = 1; //PS Vita Activation
                     title = "PS Vita Activation";
                 } else if (buttons & SCE_CTRL_CIRCLE) {
-                    stage = 1; //Get PSN Info
+                    stage = STAGE_ACC; //Get PSN Info
                     act_mode = 2; //PS Vita Deactivation
                     title = "PS Vita Deactivation";
 //                } else if (buttons & SCE_CTRL_SQUARE) {
-//                    stage = 1; //Get PSN Info
+//                    stage = STAGE_ACC; //Get PSN Info
 //                    act_mode = 3; //PS Vita Content Activation
 //                    title = "PS Vita Content Activation";
                 }
                 break;
                 
-            case 1: //Get PSN Info
+            case STAGE_ACC: //Get PSN Info
                 width = vita2d_printf(pgf, 6.0f, GREEN, "To read system PSN Account information press ");
                 vita2d_xprintf(pgf, width, 6.0f, WHITE, "CROSS");
                 width = vita2d_printf(pgf, 7.0f, RED, "To input PSN Account information press ");
                 vita2d_xprintf(pgf, width, 7.0f, WHITE, "CIRCLE");
+                width = vita2d_printf(pgf, 8.0f, BLUE, "To input a device setup key (idp.sn/device-password) press ");
+                vita2d_xprintf(pgf, width, 8.0f, WHITE, "SQUARE");
                 
                 if (buttons & SCE_CTRL_CROSS)
-                    stage = 2; //Read System PSN Info
+                    stage = STAGE_SYSTEM; //Read System PSN Info
                 else if (buttons & SCE_CTRL_CIRCLE)
-                    stage = 3; //Input PSN info
+                    stage = STAGE_MANUAL; //Input PSN info
+                else if (buttons & SCE_CTRL_SQUARE)
+                    stage = STAGE_TOKEN;
                 break;
                 
-            case 2: //Read System PSN Info
+            case STAGE_SYSTEM: //Read System PSN Info
                 sceRegMgrGetKeyStr("/CONFIG/NP", "login_id", email, 6 * 16);
                 sceRegMgrGetKeyStr("/CONFIG/NP", "password", password, 2 * 16);
                 
-                stage = 4;
+                stage = STAGE_CONFIRM;
                 break;
             
-            case 3:
+            case STAGE_MANUAL:
                 if (ime == 0) {
                     initImeDialog("PSN Account Email", "", 6 * 16, 0);
                     ime = 1;
@@ -167,11 +171,29 @@ int main(int argc, char** argv) {
                         ime = 4;
                     }
                 } else {
-                    stage = 4;
+                    stage = STAGE_CONFIRM;
                 }
                 break;
                 
-            case 4:
+            case STAGE_TOKEN:
+                sceRegMgrGetKeyStr("/CONFIG/NP", "login_id", email, 6 * 16);
+                if (ime == 0) {
+                    initImeDialog("Device Setup Key", "", 2 * 16, 0);
+                    ime = 1;
+                } else if (ime == 1) {
+                    int update = updateImeDialog();
+                    if (update == IME_DIALOG_RESULT_CANCELED || update == IME_DIALOG_RESULT_NONE) {
+                        ime = 0;
+                    } else if (update == IME_DIALOG_RESULT_FINISHED) {
+                        strncpy(password, (char *)getImeDialogInputTextUTF8(), 2 * 16);
+                        ime = 2;
+                    }
+                } else {
+                    stage = STAGE_CONFIRM;
+                }
+                break;
+                
+            case STAGE_CONFIRM:
                 _vshSblAimgrGetConsoleId(CID);
                 for (int i = 0; i < 16; i++) {
                     snprintf(idps + (i * 2), (2 * 16) - (i * 2) + 1, "%02X", CID[i]);
@@ -184,13 +206,13 @@ int main(int argc, char** argv) {
                     if (act_mode == 1) {
                         int res = vita_activate(email, password, idps, "ux0:temp/act.dat");
                         if (res == 1)
-                            stage = 5;
+                            stage = STAGE_ACTCHOOSE;
                         else
                             stage = res;
                     } else if (act_mode == 2) {
                         int res = vita_deactivate(email, password, idps);
                         if (res == 1)
-                            stage = 5;
+                            stage = STAGE_ACTCHOOSE;
                         else
                             stage = res;
 //                    } else if (act_mode == 3) {
@@ -199,7 +221,7 @@ int main(int argc, char** argv) {
                 }
                 break;
                 
-            case 5:
+            case STAGE_ACTCHOOSE:
                 if (act_mode == 1) {
                     vita2d_printf(pgf, 6.0f, GREEN, "PlayStation Vita activation data downloaded succesfully");
                     width = vita2d_printf(pgf, 8.0f, WHITE, "To replace system activation data press ");
@@ -217,18 +239,18 @@ int main(int argc, char** argv) {
                         while ((read = sceIoRead(temp_act, buffer, sizeof(buffer))) > 0) {
                             sceIoWrite(sys_act, buffer, read);
                         }
-                        stage = 6;
+                        stage = STAGE_DONE;
                     } else if (buttons & SCE_CTRL_CIRCLE) {
-                        stage = 7;
+                        stage = STAGE_NONDONE;
                     }
                 } else if (act_mode == 2) {
-                    stage = 6;
+                    stage = STAGE_DONE;
 //                } else if (act_mode == 3) {
 //                    //IMPLEMENT
                 }
                 break;
                 
-            case 6:
+            case STAGE_DONE:
                 if (act_mode == 1) {
                     vita2d_printf(pgf, 6.0f, GREEN, "System Activation data has been replaced succesfully");
                     width = vita2d_printf(pgf, 7.0f, WHITE, "To exit Vita Activator press ");
@@ -244,7 +266,7 @@ int main(int argc, char** argv) {
                 }
                 break;
                 
-            case 7:
+            case STAGE_NONDONE:
                 if (act_mode == 1) {
                     vita2d_printf(pgf, 6.0f, GREEN, "Activation data is stored in ux0:temp/act.dat");
                     width = vita2d_printf(pgf, 7.0f, WHITE, "To exit Vita Activator press ");
@@ -252,13 +274,14 @@ int main(int argc, char** argv) {
                     if (buttons & SCE_CTRL_CROSS)
                         loop = 0;
                 }
+                break;
                 
             default: ;
                 char error[8 * 16];
                 if (stage == ACTIVATE_INVALID_PSN || stage == ACTIVATE_INVALID_IDPS || stage == ACTIVATE_UNKNOWN_ERROR) {
                     char err[4 * 16];
                     if (stage == ACTIVATE_INVALID_PSN)
-                        strlcpy(err, "Invalid PSN Account Information", 4 * 16);
+                        strlcpy(err, "Invalid PSN Login or Device Setup Key", 4 * 16);
                     else if (stage == ACTIVATE_INVALID_IDPS)
                         strlcpy(err, "Invalid IDPS (you should be really scared)", 4 * 16);
                     else
