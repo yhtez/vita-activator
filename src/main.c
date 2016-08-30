@@ -21,7 +21,7 @@
 #define FONT_Y_SPACE 23.0f * FONT_SIZE
 
 #define TITLE "Vita Activator"
-#define VER "1.0"
+#define VER "1.1"
 
 #define SCREEN_WIDTH 960
 #define SCREEN_HEIGHT 544
@@ -270,9 +270,9 @@ int main(int argc, char** argv) {
                 width = vita2d_printf(pgf, 7.0f, WHITE, "Error: ");
                 vita2d_xprintf(pgf, width, 7.0f, CYAN, "%s", error);
                 width = vita2d_printf(pgf, 8.0f, WHITE, "Email: ");
-                vita2d_xprintf(pgf, width, 8.0f, email[0] == 0 ? RED : CYAN, email[0] == 0 ? "UNDEF" : email);
+                vita2d_xprintf(pgf, width, 8.0f, email[0] == 0 ? RED : CYAN, "%s", email[0] == 0 ? "UNDEF" : email);
                 width = vita2d_printf(pgf, 9.0f, WHITE, "Password: ");
-                vita2d_xprintf(pgf, width, 9.0f, password[0] == 0 ? RED : CYAN, password[0] == 0 ? "UNDEF" : password);
+                vita2d_xprintf(pgf, width, 9.0f, password[0] == 0 ? RED : CYAN, "%s", password[0] == 0 ? "UNDEF" : password);
                 width = vita2d_printf(pgf, 10.0f, WHITE, "IDPS: ");
                 vita2d_xprintf(pgf, width, 10.0f, idps[0] == 0 ? RED : CYAN, idps[0] == 0 ? "UNDEF" : idps);
                 width = vita2d_printf(pgf, 11.0f, WHITE, "To exit Vita Activator press ");
